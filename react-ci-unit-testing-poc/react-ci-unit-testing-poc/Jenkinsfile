@@ -35,7 +35,7 @@ pipeline {
             steps {
                 dir('react-ci-unit-testing-poc/react-ci-unit-testing-poc') {
                     // Agar tests fail hone par bhi pipeline pass karni ho toh catchError use kar sakte hain
-                    sh 'npm test -- --watchAll=false' 
+                    sh 'npm test'
                 }
             }
         }
