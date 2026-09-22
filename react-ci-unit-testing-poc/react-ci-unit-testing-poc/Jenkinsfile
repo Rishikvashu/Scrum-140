@@ -1,18 +1,12 @@
 pipeline {
     agent any
-
-    options {
-        timestamps()
-        disableConcurrentBuilds()
+    
+    // Agar aapne Tarika 1 (Jenkins Tools) use kiya hai toh ye rehne dein
+    tools {
+        nodejs 'node20' 
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Environment') {
             steps {
                 sh 'node --version'
@@ -22,38 +16,36 @@ pipeline {
 
         stage('Install Dependencies') {
             steps {
-                sh 'npm install'
+                // Jenkins ko sahi folder ke andar bhej rahe hain
+                dir('react-ci-unit-testing-poc/react-ci-unit-testing-poc') {
+                    sh 'npm install'
+                }
             }
         }
 
         stage('Lint') {
             steps {
-                sh 'npm run lint'
+                dir('react-ci-unit-testing-poc/react-ci-unit-testing-poc') {
+                    sh 'npm run lint --if-present'
+                }
             }
         }
 
         stage('Unit Tests') {
             steps {
-                sh 'npm test'
+                dir('react-ci-unit-testing-poc/react-ci-unit-testing-poc') {
+                    // Agar tests fail hone par bhi pipeline pass karni ho toh catchError use kar sakte hain
+                    sh 'npm test -- --watchAll=false' 
+                }
             }
         }
 
         stage('Build') {
             steps {
-                sh 'npm run build'
+                dir('react-ci-unit-testing-poc/react-ci-unit-testing-poc') {
+                    sh 'npm run build'
+                }
             }
-        }
-    }
-
-    post {
-        always {
-            archiveArtifacts artifacts: 'dist/**', allowEmptyArchive: true
-        }
-        success {
-            echo 'CI PASSED: lint + unit tests + build completed successfully.'
-        }
-        failure {
-            echo 'CI FAILED: inspect the stage that failed and fix the code/tests.'
         }
     }
 }
